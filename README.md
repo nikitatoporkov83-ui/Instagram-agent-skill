@@ -39,8 +39,9 @@ python3 -m unittest discover -s tests -v
 
 ## GitHub Pages
 
-Процесс размещения описан в `.github/workflows/pages.yml`: он проверяет проект
-и публикует существующую папку `web/`, сохраняя дизайн и инструменты.
+Автоматическое размещение описано в `.github/workflows/static.yml`: процесс
+проверяет проект и публикует существующую папку `web/`, сохраняя дизайн и инструменты.
+Ручной процесс `.github/workflows/pages.yml` также сохранён.
 
 Для первого запуска включите **Settings → Pages → Source: GitHub Actions**,
 затем запустите **Actions → Publish insta.studio → Run workflow** для `main`.
@@ -48,7 +49,7 @@ python3 -m unittest discover -s tests -v
 `https://nikitatoporkov83-ui.github.io/Instagram-agent-skill/`.
 Наличие файла workflow само по себе не означает, что сайт уже опубликован.
 
-Следующие изменения в `web/` на ветке `main` запускают размещение автоматически.
+Изменения в ветке `main` запускают стандартный процесс размещения автоматически.
 Автономная версия сохраняется в артефакте `insta-studio-offline` успешного запуска.
 
 Оценки хуков, стиля и тайминга рассчитаны на английский. Для генеративных

@@ -2,16 +2,12 @@ name: Publish insta.studio
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'web/**'
 
 permissions:
   contents: read
 
 concurrency:
-  group: github-pages
+  group: pages
   cancel-in-progress: false
 
 jobs:
