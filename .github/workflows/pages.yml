@@ -1,0 +1,76 @@
+name: Publish insta.studio
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'web/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Check and package the existing website
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build and verify the website
+        run: |
+          python3 scripts/build_site.py
+          node --check web/app.js
+          node --check web/engine.js
+          python3 -m unittest discover -s tests -v
+
+      - name: Package the original web directory
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+
+      - name: Keep the downloadable offline website
+        uses: actions/upload-artifact@v4
+        with:
+          name: insta-studio-offline
+          path: |
+            dist/instagram-studio.html
+            dist/instagram-studio.zip
+          retention-days: 14
+
+  deploy:
+    name: Publish to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Read GitHub Pages configuration
+        uses: actions/configure-pages@v5
+
+      - name: Deploy the checked website
+        id: deployment
+        uses: actions/deploy-pages@v4
