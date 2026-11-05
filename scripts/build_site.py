@@ -49,7 +49,7 @@ def main():
     html = (WEB / "index.html").read_text(encoding="utf-8")
     html = html.replace('<link rel="stylesheet" href="styles.css">',
                         "<style>\n" + (WEB / "styles.css").read_text(encoding="utf-8") + "\n</style>")
-    for name in ("data.js", "engine.js", "app.js"):
+    for name in ("data.js", "engine.js", "integration-config.js", "instagram.js", "app.js"):
         script = (WEB / name).read_text(encoding="utf-8")
         script = re.sub(r"</script", r"<\\/script", script, flags=re.IGNORECASE)
         html = html.replace(f'<script src="{name}" defer></script>', "<script>\n" + script + "\n</script>")
@@ -60,6 +60,9 @@ def main():
         archive.writestr("instagram-studio/index.html", html)
         archive.write(ROOT / "LICENSE", "instagram-studio/LICENSE")
         archive.write(ROOT / "WEBSITE_RU.md", "instagram-studio/README.md")
+        for name in ("privacy.html", "deletion.html"):
+            legal = (WEB / name).read_text(encoding="utf-8").replace('<link rel="stylesheet" href="styles.css">', "<style>" + (WEB / "styles.css").read_text(encoding="utf-8") + "</style>")
+            archive.writestr("instagram-studio/" + name, legal)
     print(f"Built {len(skills)} skills, {len(data['hooks']['hooks'])} hook formulas and standalone HTML.")
     print("Preview: dist/instagram-studio.html")
     print("Download: dist/instagram-studio.zip")

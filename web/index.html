@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="styles.css">
   <script src="data.js" defer></script>
   <script src="engine.js" defer></script>
+  <script src="integration-config.js" defer></script>
+  <script src="instagram.js" defer></script>
   <script src="app.js" defer></script>
 </head>
 <body>
@@ -31,7 +33,7 @@
       <a href="#drafts" data-nav="drafts"><span data-icon="folder"></span>Мои черновики<span class="nav-count" id="draft-count">0</span></a>
     </nav>
     <div class="nav-label brand-nav-label">ВАШ БРЕНД</div>
-    <nav class="nav-list"><a href="#voice" data-nav="voice"><span data-icon="voice"></span>Профиль голоса</a></nav>
+    <nav class="nav-list"><a href="#voice" data-nav="voice"><span data-icon="voice"></span>Профиль голоса</a><a href="#instagram" data-nav="instagram"><span data-icon="instagram"></span>Instagram</a></nav>
     <div class="sidebar-bottom">
       <div class="sidebar-note"><span class="note-spark" data-icon="spark"></span><h3>Контент, в котором<br>слышно вас.</h3><p>Добавьте свой стиль —<br>начните с профиля голоса.</p><a href="#voice">Настроить профиль<span data-icon="arrow-right"></span></a><div class="note-orbit"></div></div>
       <a class="source-link" href="https://github.com/Jakeschincariol/instagram-agent-skill" target="_blank" rel="noopener noreferrer"><span data-icon="github"></span>Открытый исходный код<span data-icon="external"></span></a>
@@ -41,7 +43,7 @@
   <div class="app-shell">
     <header class="topbar">
       <div class="breadcrumb"><button class="icon-button mobile-menu" id="menu-toggle" aria-label="Открыть меню" aria-expanded="false"><span data-icon="menu"></span></button><a href="#overview" aria-label="Главная"><span data-icon="home"></span></a><span class="breadcrumb-divider">/</span><span id="breadcrumb-title">Обзор</span></div>
-      <div class="topbar-actions"><span class="local-status"><span data-icon="shield"></span>Работает на вашем устройстве</span><button class="avatar" data-route="voice" aria-label="Открыть профиль голоса" id="top-avatar">Я</button></div>
+      <div class="topbar-actions"><span class="local-status"><span data-icon="shield"></span>Локальный анализ текста</span><button class="button button-secondary instagram-header-button" id="instagram-header" data-route="instagram" aria-label="Подключить Instagram"><span data-icon="instagram"></span><span class="instagram-header-label">Подключить Instagram</span></button><button class="avatar" data-route="voice" aria-label="Открыть профиль голоса" id="top-avatar">Я</button></div>
     </header>
     <main id="main" tabindex="-1"></main>
     <footer class="app-footer"><span>Создавайте осознанно. Публикуйте своим голосом.</span><span>На базе Instagram Agent Skill · Jake Schincariol · MIT</span></footer>

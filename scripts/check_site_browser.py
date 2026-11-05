@@ -156,7 +156,7 @@ def main():
         phone.on("pageerror", lambda error: errors.append(str(error)))
         phone.goto(URL, wait_until="networkidle")
         phone.screenshot(path=str(ARTIFACTS / "instagram-studio-mobile.png"), full_page=True)
-        for view in ("overview", "studio", "library", "plan", "voice", "drafts"):
+        for view in ("overview", "studio", "library", "plan", "voice", "drafts", "instagram"):
             phone.goto(URL + "#" + view, wait_until="networkidle")
             assert phone.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), f"Mobile overflow in {view}"
         phone.locator("#menu-toggle").click()
@@ -165,7 +165,7 @@ def main():
         expect(phone.locator("h1")).to_contain_text("13 способов")
         expect(phone.locator("#menu-toggle")).to_have_attribute("aria-expanded", "false")
         mobile.close()
-        checks.append("Mobile: all six pages fit 390px; drawer navigation works")
+        checks.append("Mobile: all seven pages fit 390px; drawer navigation works")
 
         # Managed Chromium blocks file:// by policy. Serve only the single-file
         # artifact locally, then disable networking to verify standalone behavior.

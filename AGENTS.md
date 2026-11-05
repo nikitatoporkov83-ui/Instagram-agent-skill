@@ -44,3 +44,11 @@ and the standalone preview in `dist/`. JavaScript uses canonical constants
 exported from the original Python tools. The website is static and works offline.
 Keep user input escaped when rendering HTML and preserve the language limits.
 Do not describe prompt assembly as AI generation or imply Instagram is connected.
+
+The optional Instagram integration lives in `backend/` (Cloudflare Workers/D1)
+and `web/instagram.js`. Use Node.js 22+, `npm ci --prefix backend`,
+`npm test --prefix backend`, and `npm run check --prefix backend` for its checks.
+See `INSTAGRAM_SETUP_RU.md` for real Meta application and hosting requirements.
+Never put Meta secrets or Instagram tokens in frontend files, Git, or logs.
+Do not claim a live connection based on emulator tests. Every publication needs
+explicit confirmation of its media, caption, and account.
