@@ -8,15 +8,16 @@
   <title>insta.studio — Vice City Edition</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%23f582cb'/%3E%3Crect x='10' y='10' width='20' height='20' rx='6' fill='none' stroke='white' stroke-width='2.5'/%3E%3Ccircle cx='20' cy='20' r='5' fill='none' stroke='white' stroke-width='2.5'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="vice-city.css">
+  <link rel="stylesheet" href="vice-city.css?v=night-drive-2">
   <script src="data.js" defer></script>
   <script src="engine.js" defer></script>
   <script src="integration-config.js" defer></script>
   <script src="instagram.js" defer></script>
-  <script src="app.js" defer></script>
+  <script src="app.js?v=night-drive-2" defer></script>
 </head>
-<body>
+<body data-view="overview">
   <a class="skip-link" href="#main">К содержимому</a>
+  <div class="city-backdrop" aria-hidden="true"><img class="city-backdrop-image" src="assets/vice-city-hero.png" alt="" fetchpriority="high" decoding="async"></div>
   <div class="nav-shade" id="nav-shade"></div>
   <aside class="sidebar" id="sidebar" aria-label="Основная навигация">
     <a class="brand" href="#overview" aria-label="insta.studio — главная">
@@ -36,7 +37,7 @@
     <div class="nav-label brand-nav-label">ВАШ БРЕНД</div>
     <nav class="nav-list"><a href="#voice" data-nav="voice"><span data-icon="voice"></span>Профиль голоса</a><a href="#instagram" data-nav="instagram"><span data-icon="instagram"></span>Instagram</a></nav>
     <div class="sidebar-bottom">
-      <div class="sidebar-note"><span class="note-spark" data-icon="spark"></span><h3>Твой голос.<br>Твои правила.</h3><p>Настрой свой стиль.<br>Выходи в ленту по-своему.</p><a href="#voice">Настроить профиль<span data-icon="arrow-right"></span></a><div class="note-orbit"></div></div>
+      <div class="sidebar-note"><span class="note-spark" data-icon="spark"></span><h3>Лови частоту.</h3><p>Меньше шума.<br>Больше характера.</p><a href="#voice">Настроить голос<span data-icon="arrow-right"></span></a><div class="note-orbit"></div></div>
       <a class="source-link" href="https://github.com/Jakeschincariol/instagram-agent-skill" target="_blank" rel="noopener noreferrer"><span data-icon="github"></span>Открытый исходный код<span data-icon="external"></span></a>
       <div class="sidebar-version"><span class="status-dot"></span>Ваши идеи остаются у вас <span>v1.0</span></div>
     </div>
@@ -47,7 +48,7 @@
       <div class="topbar-actions"><span class="local-status"><span data-icon="shield"></span>Локальный анализ текста</span><button class="button button-secondary instagram-header-button" id="instagram-header" data-route="instagram" aria-label="Подключить Instagram"><span data-icon="instagram"></span><span class="instagram-header-label">Подключить Instagram</span></button><button class="avatar" data-route="voice" aria-label="Открыть профиль голоса" id="top-avatar">Я</button></div>
     </header>
     <main id="main" tabindex="-1"></main>
-    <footer class="app-footer"><span>Создавайте осознанно. Публикуйте своим голосом.</span><span>На базе Instagram Agent Skill · Jake Schincariol · MIT</span></footer>
+    <footer class="app-footer"><span>От первого кадра до последнего свайпа.</span><span>На базе Instagram Agent Skill · Jake Schincariol · MIT</span></footer>
   </div>
   <dialog id="dialog" aria-labelledby="dialog-title"><div class="dialog-content" id="dialog-content"></div></dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>

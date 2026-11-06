@@ -24,8 +24,8 @@ def embedded_styles(html):
         css = (WEB / name).read_text(encoding="utf-8")
         css = re.sub(r"url\('(?P<asset>assets/[^']+)'\)",
                      lambda match: "url('" + embedded_asset(match["asset"]) + "')", css)
-        html = html.replace(f'<link rel="stylesheet" href="{name}">',
-                            "<style>\n" + css + "\n</style>")
+        html = re.sub(r'<link rel="stylesheet" href="' + re.escape(name) + r'(?:\?[^"\s]*)?">',
+                      lambda match: "<style>\n" + css + "\n</style>", html)
     return html
 
 
@@ -65,13 +65,13 @@ def main():
     (WEB / "data.js").write_text("// Generated from canonical skill files. Run scripts/build_site.py to refresh.\n"
                                  "globalThis.IG_DATA = " + serialized + ";\n", encoding="utf-8")
     html = embedded_styles((WEB / "index.html").read_text(encoding="utf-8"))
+    html = html.replace('src="assets/vice-city-hero.png"',
+                        'src="' + embedded_asset("assets/vice-city-hero.png") + '"')
     for name in ("data.js", "engine.js", "integration-config.js", "instagram.js", "app.js"):
         script = (WEB / name).read_text(encoding="utf-8")
-        if name == "app.js":
-            script = script.replace('src="assets/vice-city-hero.png"',
-                                    'src="' + embedded_asset("assets/vice-city-hero.png") + '"')
         script = re.sub(r"</script", r"<\\/script", script, flags=re.IGNORECASE)
-        html = html.replace(f'<script src="{name}" defer></script>', "<script>\n" + script + "\n</script>")
+        html = re.sub(r'<script src="' + re.escape(name) + r'(?:\?[^"\s]*)?" defer></script>',
+                      lambda match: "<script>\n" + script + "\n</script>", html)
     dist = ROOT / "dist"
     dist.mkdir(exist_ok=True)
     (dist / "instagram-studio.html").write_text(html, encoding="utf-8")
