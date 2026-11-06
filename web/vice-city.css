@@ -441,6 +441,38 @@ body:not([data-view="overview"]) .city-backdrop:after { background: #080e19b3; }
   .stat-card, .stat-card:first-child { padding: 16px 10px; gap: 9px; }
   .stat-text span { font-size: 7px; }
 }
+.apify-panel { margin-bottom: 26px; }
+.apify-source-row { display: grid; grid-template-columns: 1.25fr 1fr; gap: 15px; margin-top: 19px; }
+.apify-source-row > div { min-width: 0; }
+.apify-source-row input { font-size: 12px; }
+.apify-panel > .tool-actions { flex-wrap: wrap; align-items: center; }
+.apify-panel .field-help { margin-top: 13px; }
+.apify-panel .error-message { margin-top: 16px; }
+.apify-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 13px; margin: 26px 0 16px; padding-top: 20px; border-top: 1px solid #d7bdd42b; font-size: 11px; color: #b6c5d7; }
+.apify-toolbar .tool-actions { flex-wrap: wrap; margin: 0; }
+.apify-reel-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 15px; max-height: min(860px,80vh); overflow-y: auto; align-content: start; scrollbar-gutter: stable; padding-right: 4px; }
+.apify-reel { min-width: 0; padding: 19px; border: 1px solid #d1b0d538; border-radius: 8px; background: #0a1525a8; }
+.apify-reel-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; }
+.apify-reel-heading > strong { font-size: 11px; color: #e8c4df; overflow-wrap: anywhere; }
+.apify-reel-number { font-family: 'Oswald',sans-serif; font-size: 23px; color: #7ce0d3; }
+.apify-select { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 0 auto; font-size: 9px; font-weight: 400; color: #a5bdd0; }
+.apify-select input { width: 15px; height: 15px; margin: 0; padding: 0; accent-color: #f69ccc; }
+.apify-reel > p { font-size: 12px; line-height: 1.9; color: #c6d0e2; margin: 14px 0; overflow-wrap: anywhere; }
+.apify-metrics { display: grid; grid-template-columns: 1.7fr 1fr 1fr; gap: 10px; padding: 13px 0; border-block: 1px solid #d1b0d522; }
+.apify-metrics > span { font-family: 'Oswald',sans-serif; font-size: 23px; color: #f1c1de; overflow-wrap: anywhere; }
+.apify-metrics small { display: block; margin-top: 2px; color: #8fa7c2; font-family: 'Manrope',sans-serif; font-size: 7px; line-height: 1.7; }
+.apify-reel-links { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding-top: 15px; }
+.apify-reel-links .section-link { font-size: 9px; }
+.apify-reel-links svg { width: 12px; height: 12px; }
+.dialog-description > p + p { margin-top: 15px; }
+@media (max-width: 1100px) {
+  .apify-reel-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .apify-source-row { grid-template-columns: 1fr; }
+  .apify-reel { padding: 16px; }
+  .apify-select { font-size: 8px; }
+}
 @media (prefers-reduced-motion: reduce) {
   *, *:before, *:after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }

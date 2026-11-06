@@ -52,3 +52,11 @@ See `INSTAGRAM_SETUP_RU.md` for real Meta application and hosting requirements.
 Never put Meta secrets or Instagram tokens in frontend files, Git, or logs.
 Do not claim a live connection based on emulator tests. Every publication needs
 explicit confirmation of its media, caption, and account.
+
+The optional Apify bridge is `backend/src/apify.mjs`; an independent Worker can
+use `backend/wrangler.apify.toml` without Meta or D1. `web/apify-data.js` is the
+shared allowlisted projection for browser imports, backend responses, and the
+collection CLI. Run `python3 scripts/check_apify_browser.py` for its UI checks.
+Keep provider credentials in secure settings; the site accepts only a distinct
+studio access code. Do not label a caption score as a reviewed video hook.
+See `APIFY_SETUP_RU.md`; real collection needs a configured APIFY_API_TOKEN.

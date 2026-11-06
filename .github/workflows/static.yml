@@ -47,9 +47,12 @@ jobs:
           node --check web/app.js
           node --check web/engine.js
           node --check web/instagram.js
+          node --check web/apify-data.js
+          node --check web/apify.js
           npm ci --prefix backend --no-audit --no-fund
           npm test --prefix backend
           npm run check --prefix backend
+          npm run check:apify --prefix backend
           python3 -m unittest discover -s tests -v
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

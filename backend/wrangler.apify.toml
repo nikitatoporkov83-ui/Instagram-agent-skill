@@ -1,0 +1,11 @@
+name = "insta-studio-apify"
+main = "src/apify-worker.mjs"
+compatibility_date = "2026-07-30"
+keep_vars = true
+
+[vars]
+SITE_URL = "https://nikitatoporkov83-ui.github.io/Instagram-agent-skill/"
+# Store APIFY_API_TOKEN and APIFY_ACCESS_KEY as Worker secrets, never here.
+
+[observability]
+enabled = false

@@ -28,6 +28,7 @@ python3 scripts/build_site.py
 
 Результат: `dist/instagram-studio.html` и `dist/instagram-studio.zip`.
 Подробнее — [инструкция по сайту](WEBSITE_RU.md).
+Импорт роликов и метрик Apify: [подключение и сбор #gta6](APIFY_SETUP_RU.md).
 
 ## Проверка проекта
 

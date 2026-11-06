@@ -67,7 +67,7 @@ def main():
     html = embedded_styles((WEB / "index.html").read_text(encoding="utf-8"))
     html = html.replace('src="assets/vice-city-hero.png"',
                         'src="' + embedded_asset("assets/vice-city-hero.png") + '"')
-    for name in ("data.js", "engine.js", "integration-config.js", "instagram.js", "app.js"):
+    for name in ("data.js", "engine.js", "integration-config.js", "apify-data.js", "apify.js", "instagram.js", "app.js"):
         script = (WEB / name).read_text(encoding="utf-8")
         script = re.sub(r"</script", r"<\\/script", script, flags=re.IGNORECASE)
         html = re.sub(r'<script src="' + re.escape(name) + r'(?:\?[^"\s]*)?" defer></script>',
@@ -79,6 +79,8 @@ def main():
         archive.writestr("instagram-studio/index.html", html)
         archive.write(ROOT / "LICENSE", "instagram-studio/LICENSE")
         archive.write(ROOT / "WEBSITE_RU.md", "instagram-studio/README.md")
+        for name in ("APIFY_SETUP_RU.md", "INSTAGRAM_SETUP_RU.md"):
+            archive.write(ROOT / name, "instagram-studio/" + name)
         for license_file in (WEB / "assets").glob("*-OFL.txt"):
             archive.write(license_file, "instagram-studio/licenses/" + license_file.name)
         for name in ("privacy.html", "deletion.html"):

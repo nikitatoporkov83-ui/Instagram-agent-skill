@@ -8,7 +8,10 @@
     "dev": "wrangler dev --local",
     "deploy": "wrangler deploy",
     "check": "wrangler deploy --dry-run",
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "dev:apify": "wrangler dev --config wrangler.apify.toml --local",
+    "deploy:apify": "wrangler deploy --config wrangler.apify.toml",
+    "check:apify": "wrangler deploy --config wrangler.apify.toml --dry-run"
   },
   "devDependencies": {
     "miniflare": "4.20260730.0",

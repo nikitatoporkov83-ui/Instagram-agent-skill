@@ -19,6 +19,7 @@ async function setup(t, {processing = false, publishFailure = false, configured 
   const mock = {creates:0,publishes:0,finished:!processing,requests:[]};
   const mf = new Miniflare({
     modules:true,
+    modulesRoot:new URL('../../',import.meta.url).pathname,
     scriptPath:new URL('../src/worker.mjs',import.meta.url).pathname,
     compatibilityDate:'2026-07-30',
     bindings:configured ? bindings : {SITE_URL:ORIGIN+'/'},

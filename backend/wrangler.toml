@@ -8,6 +8,8 @@ SITE_URL = "https://nikitatoporkov83-ui.github.io/Instagram-agent-skill/"
 GRAPH_API_VERSION = "v24.0"
 # Set INSTAGRAM_APP_ID and PUBLIC_API_URL in the Worker settings before deployment.
 # Store INSTAGRAM_APP_SECRET and TOKEN_ENCRYPTION_KEY as Worker secrets.
+# Optional Apify import uses separate secrets APIFY_API_TOKEN and APIFY_ACCESS_KEY.
+# APIFY_ACCESS_KEY must contain at least 32 characters; never publish either secret.
 
 [[d1_databases]]
 binding = "DB"

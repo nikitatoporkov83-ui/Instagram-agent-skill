@@ -3,6 +3,7 @@
  * never a Meta token or application secret. A timer can finish only posts which
  * have already received the user's explicit confirmation.
  */
+import { handleApify } from './apify.mjs';
 const SCOPES = ['instagram_business_basic', 'instagram_business_content_publish'];
 const DAY = 86400;
 const encoder = new TextEncoder();
@@ -230,6 +231,8 @@ async function signedUser(request,env) {
 async function deleteUser(env,id) { await env.DB.prepare('DELETE FROM connections WHERE instagram_user_id=?').bind(id).run(); }
 
 async function handle(request,env) {
+  const apifyResponse = await handleApify(request,env);
+  if (apifyResponse) return apifyResponse;
   const url = new URL(request.url), path = url.pathname, c = configuration(env);
   if (path === '/health' && request.method === 'GET') return json(request,env,{configured:c.ready,permissions:SCOPES});
   if (request.method === 'OPTIONS') {
