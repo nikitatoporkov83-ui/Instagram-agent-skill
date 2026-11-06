@@ -21,18 +21,27 @@ class Handler(SimpleHTTPRequestHandler):
         pass
 
     def do_GET(self):
-        if self.path.split('?')[0] != '/legacy.html':
+        path = self.path.split('?')[0]
+        if path not in ('/legacy.html','/standalone.html'):
             return super().do_GET()
-        # A cached older document can still request the individual source files.
-        html = (ROOT / 'web/index.html').read_text()
-        tags = '\n'.join(f'<script src="{name}" defer></script>' for name in SCRIPTS)
-        html = re.sub(r'<script[^>]+data-site-bundle></script>',lambda match:tags,html)
+        if path == '/standalone.html':
+            html = (ROOT / 'dist/instagram-studio.html').read_text()
+        else:
+            # A cached older document can still request the individual source files.
+            html = (ROOT / 'web/index.html').read_text()
+            tags = '\n'.join(f'<script src="{name}" defer></script>' for name in SCRIPTS)
+            html = re.sub(r'<script[^>]+data-site-bundle></script>',lambda match:tags,html)
         content = html.encode()
         self.send_response(200)
         self.send_header('Content-Type','text/html;charset=utf-8')
         self.send_header('Content-Length',str(len(content)))
         self.end_headers()
         self.wfile.write(content)
+
+    def end_headers(self):
+        # Public static assets may be loaded by an opaque-origin srcdoc preview.
+        self.send_header('Access-Control-Allow-Origin','*')
+        super().end_headers()
 
 
 def check_routes(page,mobile=False):
@@ -70,7 +79,7 @@ def main():
             browser_path = next((path for name in ('chromium','google-chrome','google-chrome-stable') if (path := which(name))),None)
             options = {'executable_path':browser_path} if browser_path else {}
             print('Browser:',browser_path or 'Playwright Chromium',flush=True)
-            browser = p.chromium.launch(headless=True,**options)
+            browser = p.chromium.launch(headless=True,args=['--disable-gpu'],**options)
             context = browser.new_context(viewport={'width':1440,'height':1000})
             page = context.new_page()
             page.on('pageerror',lambda error:errors.append(str(error)))
@@ -130,13 +139,24 @@ def main():
             wrapper = browser.new_page(viewport={'width':1440,'height':1000})
             wrapper.on('pageerror',lambda error:errors.append(str(error)))
             wrapper.set_content('<iframe sandbox="allow-scripts" style="width:1400px;height:950px;border:0"></iframe>')
-            wrapper.locator('iframe').evaluate('(frame,html)=>frame.srcdoc=html',(ROOT / 'dist/instagram-studio.html').read_text())
+            preview_html = (ROOT / 'web/index.html').read_text().replace('<head>',f'<head><base href="{origin}/">',1)
+            wrapper.locator('iframe').evaluate('(frame,html)=>frame.srcdoc=html',preview_html)
             frame = wrapper.frames[1]
             expect(frame.locator('.hero')).to_be_visible()
             check_routes(frame)
             check_home_actions(frame)
             wrapper.close()
-            print('PASS: Standalone HTML navigation inside a sandboxed srcdoc preview stays inside the app.')
+            print('PASS: Published files inside a sandboxed srcdoc preview stay inside the app.')
+
+            context = browser.new_context(viewport={'width':1440,'height':1000})
+            standalone = context.new_page()
+            standalone.on('pageerror',lambda error:errors.append(str(error)))
+            standalone.goto(origin+'/standalone.html',wait_until='networkidle')
+            context.set_offline(True)
+            check_routes(standalone)
+            check_home_actions(standalone)
+            context.close()
+            print('PASS: The complete standalone artifact keeps navigation and CTAs working offline.')
 
             context = browser.new_context(viewport={'width':1440,'height':1000})
             recovery = context.new_page()
