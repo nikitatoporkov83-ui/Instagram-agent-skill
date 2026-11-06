@@ -1,14 +1,32 @@
 #!/usr/bin/env python3
 """Build the offline website and its standalone, downloadable HTML preview."""
 
+import base64
 import importlib.util
 import json
+import mimetypes
 import re
 import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB = ROOT / "web"
+
+
+def embedded_asset(relative):
+    mime = mimetypes.guess_type(relative)[0] or "application/octet-stream"
+    encoded = base64.b64encode((WEB / relative).read_bytes()).decode("ascii")
+    return f"data:{mime};base64,{encoded}"
+
+
+def embedded_styles(html):
+    for name in ("styles.css", "vice-city.css"):
+        css = (WEB / name).read_text(encoding="utf-8")
+        css = re.sub(r"url\('(?P<asset>assets/[^']+)'\)",
+                     lambda match: "url('" + embedded_asset(match["asset"]) + "')", css)
+        html = html.replace(f'<link rel="stylesheet" href="{name}">',
+                            "<style>\n" + css + "\n</style>")
+    return html
 
 
 def module(name, relative):
@@ -46,11 +64,12 @@ def main():
     serialized = serialized.replace("<", "\\u003c").replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
     (WEB / "data.js").write_text("// Generated from canonical skill files. Run scripts/build_site.py to refresh.\n"
                                  "globalThis.IG_DATA = " + serialized + ";\n", encoding="utf-8")
-    html = (WEB / "index.html").read_text(encoding="utf-8")
-    html = html.replace('<link rel="stylesheet" href="styles.css">',
-                        "<style>\n" + (WEB / "styles.css").read_text(encoding="utf-8") + "\n</style>")
+    html = embedded_styles((WEB / "index.html").read_text(encoding="utf-8"))
     for name in ("data.js", "engine.js", "integration-config.js", "instagram.js", "app.js"):
         script = (WEB / name).read_text(encoding="utf-8")
+        if name == "app.js":
+            script = script.replace('src="assets/vice-city-hero.png"',
+                                    'src="' + embedded_asset("assets/vice-city-hero.png") + '"')
         script = re.sub(r"</script", r"<\\/script", script, flags=re.IGNORECASE)
         html = html.replace(f'<script src="{name}" defer></script>', "<script>\n" + script + "\n</script>")
     dist = ROOT / "dist"
@@ -60,8 +79,10 @@ def main():
         archive.writestr("instagram-studio/index.html", html)
         archive.write(ROOT / "LICENSE", "instagram-studio/LICENSE")
         archive.write(ROOT / "WEBSITE_RU.md", "instagram-studio/README.md")
+        for license_file in (WEB / "assets").glob("*-OFL.txt"):
+            archive.write(license_file, "instagram-studio/licenses/" + license_file.name)
         for name in ("privacy.html", "deletion.html"):
-            legal = (WEB / name).read_text(encoding="utf-8").replace('<link rel="stylesheet" href="styles.css">', "<style>" + (WEB / "styles.css").read_text(encoding="utf-8") + "</style>")
+            legal = embedded_styles((WEB / name).read_text(encoding="utf-8"))
             archive.writestr("instagram-studio/" + name, legal)
     print(f"Built {len(skills)} skills, {len(data['hooks']['hooks'])} hook formulas and standalone HTML.")
     print("Preview: dist/instagram-studio.html")

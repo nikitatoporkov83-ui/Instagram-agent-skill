@@ -22,8 +22,10 @@ def main():
         page = context.new_page()
         page.on("pageerror", lambda error: errors.append(str(error)))
         page.goto(URL, wait_until="networkidle")
-        expect(page.locator("h1")).to_contain_text("Ваш следующий")
+        expect(page.locator("h1")).to_contain_text("Твой контент")
         expect(page.locator("#overview-analysis .score-disc strong")).to_have_text("86")
+        page.evaluate("document.fonts.ready")
+        assert page.locator(".vice-hero-image").evaluate("image => image.complete && image.naturalWidth > 1000")
         page.screenshot(path=str(ARTIFACTS / "instagram-studio-desktop.png"), full_page=True)
         page.locator("#overview-hook").fill("Hey guys, today I wanted to talk about content strategy")
         page.locator('[data-action="overview-analyze"]').click()
@@ -156,16 +158,18 @@ def main():
         phone.on("pageerror", lambda error: errors.append(str(error)))
         phone.goto(URL, wait_until="networkidle")
         phone.screenshot(path=str(ARTIFACTS / "instagram-studio-mobile.png"), full_page=True)
-        for view in ("overview", "studio", "library", "plan", "voice", "drafts", "instagram"):
-            phone.goto(URL + "#" + view, wait_until="networkidle")
-            assert phone.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), f"Mobile overflow in {view}"
+        for width in (320, 390):
+            phone.set_viewport_size({"width": width, "height": 844})
+            for view in ("overview", "studio", "library", "plan", "voice", "drafts", "instagram"):
+                phone.goto(URL + "#" + view, wait_until="networkidle")
+                assert phone.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), f"Mobile overflow at {width}px in {view}"
         phone.locator("#menu-toggle").click()
         expect(phone.locator("#menu-toggle")).to_have_attribute("aria-expanded", "true")
         phone.locator('[data-nav="library"]').click()
         expect(phone.locator("h1")).to_contain_text("13 способов")
         expect(phone.locator("#menu-toggle")).to_have_attribute("aria-expanded", "false")
         mobile.close()
-        checks.append("Mobile: all seven pages fit 390px; drawer navigation works")
+        checks.append("Mobile: all seven pages fit 320px and 390px; drawer navigation works")
 
         # Managed Chromium blocks file:// by policy. Serve only the single-file
         # artifact locally, then disable networking to verify standalone behavior.
@@ -173,10 +177,16 @@ def main():
         Thread(target=server.serve_forever, daemon=True).start()
         offline = browser.new_context(viewport={"width": 1440, "height": 1100})
         sample = offline.new_page()
+        requested_files = []
+        sample.on("request", lambda request: requested_files.append(request.url) if request.url.startswith("http") else None)
         sample.on("pageerror", lambda error: errors.append(str(error)))
         sample.goto(f"http://127.0.0.1:{server.server_port}/instagram-studio.html", wait_until="load")
         offline.set_offline(True)
-        expect(sample.locator("h1")).to_contain_text("Ваш следующий")
+        assert sample.locator(".vice-hero-image").get_attribute("src").startswith("data:image/png;base64,")
+        assert sample.locator(".vice-hero-image").evaluate("image => image.complete && image.naturalWidth > 1000")
+        sample.evaluate("document.fonts.ready")
+        assert len(requested_files) == 1, f"Standalone requested external assets: {requested_files}"
+        expect(sample.locator("h1")).to_contain_text("Твой контент")
         sample.locator('[data-action="overview-analyze"]').click()
         expect(sample.locator("#overview-analysis .score-disc strong")).to_have_text("86")
         sample.locator('.hero [data-route="studio"]').click()
