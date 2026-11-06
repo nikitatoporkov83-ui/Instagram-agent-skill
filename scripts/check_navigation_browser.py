@@ -4,6 +4,7 @@ from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import re
+from shutil import which
 from threading import Thread
 from playwright.sync_api import sync_playwright, expect
 from build_site import SCRIPTS
@@ -66,7 +67,9 @@ def main():
     errors = []
     try:
         with sync_playwright() as p:
-            options = {'executable_path':'/usr/bin/chromium'} if Path('/usr/bin/chromium').exists() else {}
+            browser_path = next((path for name in ('chromium','google-chrome','google-chrome-stable') if (path := which(name))),None)
+            options = {'executable_path':browser_path} if browser_path else {}
+            print('Browser:',browser_path or 'Playwright Chromium',flush=True)
             browser = p.chromium.launch(headless=True,**options)
             context = browser.new_context(viewport={'width':1440,'height':1000})
             page = context.new_page()
@@ -183,4 +186,11 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as error:
+        # Keep the useful failure visible in public Actions annotations too.
+        message = str(error).split('Call log:')[0][:2000]
+        message = message.replace('%','%25').replace('\r','%0D').replace('\n','%0A')
+        print('::error title=Browser navigation check::'+message,flush=True)
+        raise

@@ -58,7 +58,6 @@ jobs:
       - name: Verify real browser navigation
         run: |
           python3 -m pip install playwright==1.62.0
-          python3 -m playwright install --with-deps chromium
           python3 scripts/check_navigation_browser.py
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
