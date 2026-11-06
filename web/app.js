@@ -2,6 +2,9 @@
   'use strict';
   function initialize() {
   const D = globalThis.IG_DATA, E = globalThis.IG_ENGINE;
+  const PAGES = ['overview','studio','library','voice','drafts','plan','instagram'];
+  const locationPage = () => PAGES.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview';
+  let currentPage = locationPage();
   const $ = (s, root = document) => root.querySelector(s);
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -179,8 +182,29 @@
     showDialog(`<div class="dialog-heading"><h2 id="dialog-title">${skill.title}</h2>${closeButton()}</div><p class="dialog-description">${skill.description} Подготовьте бриф, который можно передать вашему AI-агенту.</p><form id="brief-form" class="dialog-form" data-skill-id="${id}"><div class="field"><label for="brief-context">Идея, материал или задача</label><textarea id="brief-context" name="context" required maxlength="30000" placeholder="Расскажите, что хотите сделать. Добавьте реальные факты, текст или результаты."></textarea></div><div class="fields-row"><div><label for="brief-audience">Для кого</label><input id="brief-audience" name="audience" value="${esc(profile.audience || '')}" placeholder="Ваша аудитория" maxlength="2000"></div><div><label for="brief-goal">Что должен получить зритель</label><input id="brief-goal" name="goal" placeholder="Идею, ответ, инструкцию…" maxlength="2000"></div></div><button class="button button-primary" type="submit">${icon('spark')}Подготовить бриф</button></form><div id="brief-output"></div>`);
   }
   function showDialog(html) { $('#dialog-content').innerHTML = html; $('#dialog').showModal(); }
-  const instagram = globalThis.IG_INSTAGRAM.create({icon,esc,toast,showDialog,getDrafts:() => state.drafts});
-  const apify = globalThis.IG_APIFY.create({icon,esc,toast,showDialog,onImport:(text,tool = 'swipe') => {
+  function optionalIntegration(namespace, title, options, fullPage = false) {
+    let instance;
+    function get() {
+      if (namespace === 'IG_APIFY' && !globalThis.IG_APIFY_DATA) return null;
+      if (!instance && typeof globalThis[namespace]?.create === 'function') {
+        try { instance = globalThis[namespace].create(options); } catch { /* Offer recovery inside the affected section. */ }
+      }
+      return instance;
+    }
+    function unavailable() {
+      const reload = new URL(location.href);
+      reload.searchParams.set('reload',String(Date.now()));
+      reload.hash = currentPage;
+      const message = `<section class="panel"><h2>${title}</h2><p class="panel-subtitle">Не удалось загрузить раздел. Проверьте соединение и повторите загрузку.</p><a class="button button-secondary" href="${esc(reload.href)}">${icon('refresh')}Повторить загрузку</a></section>`;
+      return fullPage ? `<div class="page">${pageTitle(title,'Повторите загрузку раздела.')}${message}</div>` : message;
+    }
+    return {
+      render() { try { return get()?.render() || unavailable(); } catch { return unavailable(); } },
+      mount() { try { Promise.resolve(get()?.mount()).catch(() => toast('Не удалось обновить раздел. Повторите загрузку.')); } catch { toast('Не удалось обновить раздел. Повторите загрузку.'); } },
+    };
+  }
+  const instagram = optionalIntegration('IG_INSTAGRAM','Подключение Instagram',{icon,esc,toast,showDialog,getDrafts:() => state.drafts},true);
+  const apify = optionalIntegration('IG_APIFY','Импорт Apify',{icon,esc,toast,showDialog,onImport:(text,tool = 'swipe') => {
     activeTool = tool; inputs[tool] = text; delete toolResults[tool];
     route('studio'); analyze();
   }});
@@ -224,11 +248,20 @@
     $('#draft-count').textContent = state.drafts.length;
     $('#top-avatar').textContent = (String(state.profile.name || '').trim()[0] || 'Я').toUpperCase();
   }
-  function route(name) { if (location.hash.slice(1) === name) render(); else location.hash = name; }
+  function route(name) {
+    if (!PAGES.includes(name)) return;
+    currentPage = name;
+    try { if (location.hash !== '#'+name) history.pushState({instaStudioPage:name},'', '#'+name); }
+    catch { /* Sandboxed previews can prohibit URL changes; rendering still works. */ }
+    render();
+  }
+  function syncLocation() {
+    const name = locationPage();
+    if (name !== currentPage) { currentPage = name; render(); }
+  }
   function render() {
     if (profileTimer) { clearTimeout(profileTimer); profileTimer = null; persist(); }
-    let name = location.hash.slice(1) || 'overview';
-    if (!['overview','studio','library','voice','drafts','plan','instagram'].includes(name)) name = 'overview';
+    const name = currentPage;
     document.body.dataset.view = name;
     const views = {overview,studio,library,voice,drafts,plan,instagram:instagram.render};
     $('#main').innerHTML = views[name]();
@@ -244,7 +277,11 @@
   }
   document.addEventListener('click', async event => {
     const b = event.target.closest('button, a'); if (!b) return;
-    if (b.dataset.route) { route(b.dataset.route); return; }
+    const targetPage = b.dataset.route || (b.tagName === 'A' && b.getAttribute('href')?.match(/^#([a-z]+)$/)?.[1]);
+    if (PAGES.includes(targetPage)) {
+      if (b.tagName === 'A' && (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || b.target === '_blank')) return;
+      event.preventDefault(); route(targetPage); return;
+    }
     if (b.dataset.skill) { openSkill(b.dataset.skill); return; }
     if (b.dataset.tool) { activeTool = b.dataset.tool; render(); return; }
     if (b.dataset.filter) { libraryFilter = b.dataset.filter; render(); return; }
@@ -303,7 +340,8 @@
   $('#nav-shade').addEventListener('click', () => { document.body.classList.remove('nav-open'); $('#menu-toggle').setAttribute('aria-expanded','false'); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { document.body.classList.remove('nav-open'); $('#menu-toggle').setAttribute('aria-expanded','false'); } });
   $('#dialog').addEventListener('click', e => { if (e.target === $('#dialog')) { const r = $('#dialog').getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) $('#dialog').close(); } });
-  window.addEventListener('hashchange', render);
+  window.addEventListener('hashchange', syncLocation);
+  window.addEventListener('popstate', syncLocation);
   render();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',initialize,{once:true});

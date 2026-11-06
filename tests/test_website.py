@@ -1,7 +1,9 @@
 """Check meaningful browser-tool results against the canonical Python tools."""
 
 import importlib.util
+import hashlib
 import json
+import re
 import subprocess
 import unittest
 from pathlib import Path
@@ -128,3 +130,12 @@ class BrowserAlgorithmTests(unittest.TestCase):
         self.assertNotIn('href="styles.css"', html)
         self.assertIn("globalThis.IG_ENGINE", html)
         self.assertIn("<html lang=\"ru\">", html)
+
+    def test_public_script_revision_matches_the_complete_bundle(self):
+        index = (ROOT / "web/index.html").read_text(encoding="utf-8")
+        revision = hashlib.sha256((ROOT / "web/studio.js").read_bytes()).hexdigest()[:16]
+        scripts = re.findall(r'<script\s+src="([^"]+)"', index)
+        self.assertEqual(scripts, ["studio.js?v=" + revision])
+        standalone = (ROOT / "dist/instagram-studio.html").read_text(encoding="utf-8")
+        self.assertNotRegex(standalone, r'<script\s+src=')
+        self.assertIn("globalThis.IG_APIFY", standalone)

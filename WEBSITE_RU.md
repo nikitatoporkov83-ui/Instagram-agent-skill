@@ -58,13 +58,20 @@ HTML-файла на размещённый сайт или другой адр�
 `web/assets/`. Шрифты Manrope и Oswald взяты из Google Fonts под SIL Open Font
 License; тексты лицензий лежат рядом со шрифтами и входят в ZIP. Автономная
 сборка встраивает иллюстрацию и шрифты в HTML и не требует CDN.
-`web/data.js` генерируется из оригинальных JSON и SKILL.md. После изменений:
+`web/data.js` генерируется из оригинальных JSON и SKILL.md. `web/studio.js`
+собирает код приложения в один файл; его версия в HTML зависит от содержимого.
+Не редактируйте этот файл вручную: после изменений исходных JS-файлов обязательно
+пересоберите сайт. Это предотвращает загрузку частей разных версий из кеша.
+Переходы между разделами работают и в предпросмотре, где изменение URL ограничено.
+После изменений:
 
 ```bash
 python3 scripts/build_site.py
 node --check web/engine.js
 node --check web/app.js
+node --check web/studio.js
 python3 -m unittest discover -s tests -v
+python3 scripts/check_navigation_browser.py
 ```
 
 Для браузерных проверок используется установленный в облачной среде Playwright

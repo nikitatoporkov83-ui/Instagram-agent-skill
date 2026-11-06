@@ -1,0 +1,186 @@
+#!/usr/bin/env python3
+"""Exercise actual navigation, sandbox previews and interrupted legacy loads."""
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+import re
+from threading import Thread
+from playwright.sync_api import sync_playwright, expect
+from build_site import SCRIPTS
+
+ROOT = Path(__file__).resolve().parents[1]
+ROUTES = {
+    'studio':'Студия контента', 'library':'13 способов', 'plan':'Неделя',
+    'drafts':'Идеи, к которым', 'voice':'Ваш голос', 'instagram':'Ваш Instagram', 'overview':'Из Vice City',
+}
+
+
+class Handler(SimpleHTTPRequestHandler):
+    def log_message(self,*args):
+        pass
+
+    def do_GET(self):
+        if self.path.split('?')[0] != '/legacy.html':
+            return super().do_GET()
+        # A cached older document can still request the individual source files.
+        html = (ROOT / 'web/index.html').read_text()
+        tags = '\n'.join(f'<script src="{name}" defer></script>' for name in SCRIPTS)
+        html = re.sub(r'<script[^>]+data-site-bundle></script>',lambda match:tags,html)
+        content = html.encode()
+        self.send_response(200)
+        self.send_header('Content-Type','text/html;charset=utf-8')
+        self.send_header('Content-Length',str(len(content)))
+        self.end_headers()
+        self.wfile.write(content)
+
+
+def check_routes(page,mobile=False):
+    for route,title in ROUTES.items():
+        if mobile:
+            page.locator('#menu-toggle').click()
+            expect(page.locator('#menu-toggle')).to_have_attribute('aria-expanded','true')
+        page.locator(f'[data-nav="{route}"]').click()
+        expect(page.locator('#main h1')).to_contain_text(title)
+        expect(page.locator(f'[data-nav="{route}"]')).to_have_attribute('aria-current','page')
+        if mobile:
+            expect(page.locator('#menu-toggle')).to_have_attribute('aria-expanded','false')
+
+
+def check_home_actions(page):
+    page.locator('.hero [data-route="studio"]').click()
+    expect(page.locator('#tool-text')).to_be_visible()
+    page.locator('[data-nav="overview"]').click()
+    page.locator('.hero [data-route="library"]').click()
+    expect(page.locator('.skill-card')).to_have_count(13)
+    page.locator('[data-nav="overview"]').click()
+    page.locator('.next-stop').click()
+    expect(page.locator('.planner-day')).to_have_count(7)
+    page.locator('.brand').click()
+    expect(page.locator('#main h1')).to_contain_text('Из Vice City')
+
+
+def main():
+    server = ThreadingHTTPServer(('127.0.0.1',0),partial(Handler,directory=str(ROOT / 'web')))
+    Thread(target=server.serve_forever,daemon=True).start()
+    origin = f'http://127.0.0.1:{server.server_port}'
+    errors = []
+    try:
+        with sync_playwright() as p:
+            options = {'executable_path':'/usr/bin/chromium'} if Path('/usr/bin/chromium').exists() else {}
+            browser = p.chromium.launch(headless=True,**options)
+            context = browser.new_context(viewport={'width':1440,'height':1000})
+            page = context.new_page()
+            page.on('pageerror',lambda error:errors.append(str(error)))
+            page.goto(origin,wait_until='networkidle')
+            check_routes(page)
+            check_home_actions(page)
+            print('PASS: All seven navigation sections, primary hero actions, weekly-plan shortcut and brand link.')
+
+            for skill in ['ig-reel','ig-caption','ig-human','ig-viral','ig-plan','ig-carousel','ig-story','ig-profile','ig-comment','ig-reply','ig-dm','ig-repurpose','ig-audit']:
+                page.locator('[data-nav="library"]').click()
+                page.locator(f'.skill-card[data-skill="{skill}"]').click()
+                if skill in ('ig-reel','ig-caption','ig-human','ig-viral'):
+                    expect(page.locator('#tool-text')).to_be_visible()
+                elif skill == 'ig-plan':
+                    expect(page.locator('.planner-day')).to_have_count(7)
+                else:
+                    expect(page.locator('#dialog')).to_be_visible()
+                    expect(page.locator('#brief-context')).to_be_visible()
+                    page.keyboard.press('Escape')
+            print('PASS: Each of the 13 library cards opens its editor, planner or brief.')
+
+            page.locator('[data-nav="overview"]').click()
+            page.locator('.hero [data-route="studio"]').click()
+            page.locator('[data-nav="library"]').click()
+            page.locator('[data-nav="plan"]').click()
+            page.go_back(); expect(page.locator('#main h1')).to_contain_text('13 способов')
+            page.go_back(); expect(page.locator('#main h1')).to_contain_text('Студия контента')
+            page.go_forward(); expect(page.locator('#main h1')).to_contain_text('13 способов')
+            context.close()
+            print('PASS: Browser Back and Forward preserve page navigation.')
+
+            for width in (320,390):
+                context = browser.new_context(viewport={'width':width,'height':844},is_mobile=True,has_touch=True)
+                phone = context.new_page()
+                phone.on('pageerror',lambda error:errors.append(str(error)))
+                phone.goto(origin,wait_until='networkidle')
+                check_routes(phone,mobile=True)
+                phone.locator('.hero [data-route="studio"]').click()
+                expect(phone.locator('#tool-text')).to_be_visible()
+                assert phone.evaluate('document.documentElement.scrollWidth <= innerWidth')
+                context.close()
+            print('PASS: Real drawer and primary-button clicks at 320px and 390px.')
+
+            context = browser.new_context(viewport={'width':1440,'height':1000})
+            context.add_init_script("""
+                history.pushState = () => { throw new DOMException('Preview has no history access','SecurityError'); };
+                window.addEventListener('hashchange',event => event.stopImmediatePropagation());
+            """)
+            preview = context.new_page()
+            preview.on('pageerror',lambda error:errors.append(str(error)))
+            preview.goto(origin,wait_until='networkidle')
+            check_routes(preview)
+            check_home_actions(preview)
+            context.close()
+            print('PASS: Menus and CTAs work when the preview blocks History API and hash events.')
+
+            wrapper = browser.new_page(viewport={'width':1440,'height':1000})
+            wrapper.on('pageerror',lambda error:errors.append(str(error)))
+            wrapper.set_content('<iframe sandbox="allow-scripts" style="width:1400px;height:950px;border:0"></iframe>')
+            wrapper.locator('iframe').evaluate('(frame,html)=>frame.srcdoc=html',(ROOT / 'dist/instagram-studio.html').read_text())
+            frame = wrapper.frames[1]
+            expect(frame.locator('.hero')).to_be_visible()
+            check_routes(frame)
+            check_home_actions(frame)
+            wrapper.close()
+            print('PASS: Standalone HTML navigation inside a sandboxed srcdoc preview stays inside the app.')
+
+            context = browser.new_context(viewport={'width':1440,'height':1000})
+            recovery = context.new_page()
+            recovery.on('pageerror',lambda error:errors.append(str(error)))
+            attempts = 0
+            def fail_once(route):
+                nonlocal attempts
+                attempts += 1
+                if attempts == 1: route.abort()
+                else: route.continue_()
+            recovery.route('**/studio.js?*',fail_once)
+            recovery.goto(origin,wait_until='networkidle')
+            expect(recovery.locator('.startup-message')).to_be_visible()
+            recovery.locator('[data-studio-reload]').click()
+            expect(recovery.locator('.hero')).to_be_visible()
+            recovery.locator('.hero [data-route="studio"]').click()
+            expect(recovery.locator('#tool-text')).to_be_visible()
+            assert attempts == 2
+            context.close()
+            print('PASS: A failed application download offers a working reload link and recovers the buttons.')
+
+            for missing in ('apify.js','apify-data.js','instagram.js'):
+                context = browser.new_context(viewport={'width':1440,'height':1000})
+                legacy = context.new_page()
+                legacy.on('pageerror',lambda error:errors.append(str(error)))
+                legacy.route('**/'+missing,lambda route:route.abort())
+                legacy.goto(origin+'/legacy.html',wait_until='networkidle')
+                check_home_actions(legacy)
+                for route,title in [('studio','Студия контента'),('library','13 способов'),('plan','Неделя')]:
+                    legacy.locator(f'[data-nav="{route}"]').click()
+                    expect(legacy.locator('#main h1')).to_contain_text(title)
+                if missing == 'instagram.js':
+                    legacy.locator('[data-nav="instagram"]').click()
+                    expect(legacy.locator('#main')).to_contain_text('Повторить загрузку')
+                else:
+                    legacy.locator('[data-nav="studio"]').click(); legacy.locator('[data-tool="swipe"]').click()
+                    expect(legacy.locator('#apify-root')).to_contain_text('Повторить загрузку')
+                    legacy.locator('[data-action="analyze"]').click()
+                    expect(legacy.locator('#tool-result tbody tr')).to_have_count(3)
+                context.close()
+            print('PASS: A failed optional script in a cached legacy page cannot disable menus, CTAs or local tools.')
+            browser.close()
+        assert not errors,'JavaScript errors: '+repr(errors)
+        print('Navigation regression checks passed. JavaScript errors: 0.')
+    finally:
+        server.shutdown(); server.server_close()
+
+
+if __name__ == '__main__':
+    main()

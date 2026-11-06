@@ -45,6 +45,7 @@ jobs:
         run: |
           python3 scripts/build_site.py
           node --check web/app.js
+          node --check web/studio.js
           node --check web/engine.js
           node --check web/instagram.js
           node --check web/apify-data.js
@@ -54,6 +55,11 @@ jobs:
           npm run check --prefix backend
           npm run check:apify --prefix backend
           python3 -m unittest discover -s tests -v
+      - name: Verify real browser navigation
+        run: |
+          python3 -m pip install playwright==1.62.0
+          python3 -m playwright install --with-deps chromium
+          python3 scripts/check_navigation_browser.py
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

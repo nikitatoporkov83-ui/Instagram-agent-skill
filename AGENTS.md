@@ -44,6 +44,11 @@ and the standalone preview in `dist/`. JavaScript uses canonical constants
 exported from the original Python tools. The website is static and works offline.
 Keep user input escaped when rendering HTML and preserve the language limits.
 Do not describe prompt assembly as AI generation or imply Instagram is connected.
+`web/studio.js` is the generated, versioned browser bundle. Edit its original
+source files and rebuild; the published HTML must load one coherent bundle.
+Run `python3 scripts/check_navigation_browser.py` after navigation/startup changes.
+It covers real clicks, mobile menus, sandboxed previews, browser history and
+optional scripts failing to load. These checks also run before Pages deployment.
 
 The optional Instagram integration lives in `backend/` (Cloudflare Workers/D1)
 and `web/instagram.js`. Use Node.js 22+, `npm ci --prefix backend`,

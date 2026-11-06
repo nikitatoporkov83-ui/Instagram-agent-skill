@@ -38,8 +38,13 @@ python3 scripts/build_site.py
 python3 scripts/build_site.py
 node --check web/app.js
 node --check web/engine.js
+node --check web/studio.js
 python3 -m unittest discover -s tests -v
 ```
+
+После правок исходных JS-файлов пересоберите `web/studio.js` командой выше.
+Проверка реальных переходов: `python3 scripts/check_navigation_browser.py`
+(нужны Playwright и Chromium). Она также выполняется перед публикацией сайта.
 
 ## GitHub Pages
 
