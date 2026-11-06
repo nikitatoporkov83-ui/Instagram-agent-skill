@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Exercise actual navigation, sandbox previews and interrupted legacy loads."""
 from functools import partial
+from html import escape
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import re
@@ -22,9 +23,19 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         path = self.path.split('?')[0]
-        if path not in ('/legacy.html','/standalone.html'):
+        if path not in ('/legacy.html','/standalone.html','/preview.html'):
             return super().do_GET()
-        if path == '/standalone.html':
+        if path == '/preview.html':
+            # Use a real HTTP parent, like the Codex preview. Assigning srcdoc via
+            # DevTools in an originless about:blank parent crashes some Chrome builds.
+            origin = f'http://127.0.0.1:{self.server.server_port}'
+            document = (ROOT / 'web/index.html').read_text().replace(
+                '<head>',f'<head><base href="{origin}/">',1)
+            html = ('<!doctype html><html><head><title>Studio preview fixture</title></head>'
+                    '<body><iframe title="Studio preview" sandbox="allow-scripts" '
+                    'style="width:1400px;height:950px;border:0" '
+                    f'srcdoc="{escape(document,quote=True)}"></iframe></body></html>')
+        elif path == '/standalone.html':
             html = (ROOT / 'dist/instagram-studio.html').read_text()
         else:
             # A cached older document can still request the individual source files.
@@ -138,10 +149,8 @@ def main():
 
             wrapper = browser.new_page(viewport={'width':1440,'height':1000})
             wrapper.on('pageerror',lambda error:errors.append(str(error)))
-            wrapper.set_content('<iframe sandbox="allow-scripts" style="width:1400px;height:950px;border:0"></iframe>')
-            preview_html = (ROOT / 'web/index.html').read_text().replace('<head>',f'<head><base href="{origin}/">',1)
-            wrapper.locator('iframe').evaluate('(frame,html)=>frame.srcdoc=html',preview_html)
-            frame = wrapper.frames[1]
+            wrapper.goto(origin+'/preview.html',wait_until='networkidle')
+            frame = wrapper.frame_locator('iframe')
             expect(frame.locator('.hero')).to_be_visible()
             check_routes(frame)
             check_home_actions(frame)
@@ -210,7 +219,11 @@ if __name__ == '__main__':
         main()
     except Exception as error:
         # Keep the useful failure visible in public Actions annotations too.
-        message = str(error).split('Call log:')[0][:2000]
+        details = str(error).split('Call log:')[0]
+        fatal = [line for line in details.splitlines()
+                 if re.search(r':FATAL:|Check failed|CHECK failed|Received signal|SIG(?:SEGV|ABRT)',line)]
+        message = (details.splitlines()[0]+'\n'+'\n'.join(fatal)+'\n'+details[-1000:]) if fatal else details
+        message = message[:2000]
         message = message.replace('%','%25').replace('\r','%0D').replace('\n','%0A')
         print('::error title=Browser navigation check::'+message,flush=True)
         raise
