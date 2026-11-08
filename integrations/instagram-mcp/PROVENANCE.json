@@ -1,0 +1,111 @@
+{
+  "source": "User-uploaded files",
+  "upstream": "https://github.com/William-Gao/instagram-mcp",
+  "upstream_commit": null,
+  "files": [
+    {
+      "file": "LICENSE",
+      "uploaded_sha256": "9fa4b76e6ec393a1e6cae9319f631aa8b3c702c7e41810d96ad0f8b13b414717"
+    },
+    {
+      "file": "README.upstream.md",
+      "uploaded_sha256": "ec0d847c995a174ddc83bd85c41d5d134a222051bfa86bd0bdfe54189b041719"
+    },
+    {
+      "file": "pyproject.toml",
+      "uploaded_sha256": "1e84db616db8748e1e9048078369eda868cc31bb113760c7e1d7fad5c5887abd"
+    },
+    {
+      "file": "SECURITY.upstream.md",
+      "uploaded_sha256": "e8ba9797ab0fd30ca503fb84d78494e70acae64a7369c34d9ae3938bbfd1b265"
+    },
+    {
+      "file": "server.upstream.json",
+      "uploaded_sha256": "0a5e55d54b2e04c42e00945041df0b21738b77ca5261fa0093ccb2e32bc2d608"
+    },
+    {
+      "file": "src/instagram_mcp/__main__.py",
+      "uploaded_sha256": "035439d17c7df1bc272855fc082415aac1b6eaf2ea7188e82d6513c82ae29c91"
+    },
+    {
+      "file": "src/instagram_mcp/client.py",
+      "uploaded_sha256": "7ab61bfceeb3d63caf14c26c95770d193684db0d1628383f36fc40399285d1fe"
+    },
+    {
+      "file": "src/instagram_mcp/__init__.py",
+      "uploaded_sha256": "bfff2e8ff8a512ca6d5bdc5bad5a1e3fa00b348fb3d7391237a58f3aaa596ca0"
+    },
+    {
+      "file": "src/instagram_mcp/config.py",
+      "uploaded_sha256": "a06b1eae37cd3828730440e02af41953ad171c0f4c843e110a4d4b966f0ab4a9"
+    },
+    {
+      "file": "src/instagram_mcp/server.py",
+      "uploaded_sha256": "7a13cbd68c0c7e6c792b965612315765c6b8afb8adfcf0f97fac5bb5bfd3be4d"
+    },
+    {
+      "file": "src/instagram_mcp/token_manager.py",
+      "uploaded_sha256": "8fca532d18c870f4654e12c60ed87466b0ec7541848528fe41d68c3769b0937a"
+    },
+    {
+      "file": "src/instagram_mcp/tools/__init__.py",
+      "uploaded_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "src/instagram_mcp/tools/comments.py",
+      "uploaded_sha256": "5eb45a49fd7d79f85da382d1dba2b04892690d1b34d98cddb57fa095f4873c82"
+    },
+    {
+      "file": "src/instagram_mcp/tools/auth.py",
+      "uploaded_sha256": "34782a806dd16f25699f6dcc8d78485b71f67666f402dede2a1fd655eb45fa0b"
+    },
+    {
+      "file": "src/instagram_mcp/tools/discovery.py",
+      "uploaded_sha256": "23cdf274946e834e1aba7dd2e3177c521993e632d22e9aa7b2e01b5cc9b388d5"
+    },
+    {
+      "file": "src/instagram_mcp/tools/hashtags.py",
+      "uploaded_sha256": "464980341eefaf55b75ef92f57a7ca24da34b8f892c245951f435ca77cdd04eb"
+    },
+    {
+      "file": "src/instagram_mcp/tools/media.py",
+      "uploaded_sha256": "e7944725c4f91e980ccae566f557ebd95acd1e41276e402fca57cd84d8ce2372"
+    },
+    {
+      "file": "src/instagram_mcp/tools/insights.py",
+      "uploaded_sha256": "971cf69d33b286fa6f4efc6c8f8b77dc99f57c540a31d110523bd00264487314"
+    },
+    {
+      "file": "src/instagram_mcp/tools/messaging.py",
+      "uploaded_sha256": "71a9890a6565062a2de4f9ca3bc2ebebf394fc814a9f0460af5491a06c3b66fc"
+    },
+    {
+      "file": "src/instagram_mcp/tools/publish.py",
+      "uploaded_sha256": "03220755fd3880a830f1f8f77590d0488213987cffe1c8f471c7716b0a227156"
+    },
+    {
+      "file": "tests/test_combinations.py",
+      "uploaded_sha256": "11383cd484ed21491970a2e4f52a06866e5be477ec118ce306d87d4248642fdb"
+    },
+    {
+      "file": "tests/test_token_manager.py",
+      "uploaded_sha256": "49b3d9d04c7c034450345d7ba4f4fec6c38fbea0f53ec531d278638332652554"
+    },
+    {
+      "file": "tests/conftest.py",
+      "uploaded_sha256": "0ae4e13af91bdc8b6de1ec9b90d7b4a72c851a3653253e755b08516989dedfee"
+    },
+    {
+      "file": "tests/test_tools.py",
+      "uploaded_sha256": "c3aa3e137099283d9f55c107571bd6219104dca47bf821a4fda9efb21ca43c43"
+    },
+    {
+      "file": "tests/smoke_test.py",
+      "uploaded_sha256": "7a7a64fbc57c23024c91177a21d25a802d8e77757defb73f689010479e7e2238"
+    },
+    {
+      "file": "tests/test_insights.py",
+      "uploaded_sha256": "95bad5c09c18f679ae1e336f6691efbc54bc63009443d7c81af3d4745941acbe"
+    }
+  ]
+}

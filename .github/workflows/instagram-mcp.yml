@@ -1,0 +1,35 @@
+name: Check Russian Instagram MCP
+
+on:
+  push:
+    paths:
+      - 'integrations/instagram-mcp/**'
+      - 'scripts/instagram_publication.py'
+      - '.github/workflows/instagram-mcp.yml'
+  pull_request:
+    paths:
+      - 'integrations/instagram-mcp/**'
+      - 'scripts/instagram_publication.py'
+      - '.github/workflows/instagram-mcp.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install the pinned MCP environment
+        run: |
+          python3 -m venv integrations/instagram-mcp/.venv
+          integrations/instagram-mcp/.venv/bin/python -m pip install -r integrations/instagram-mcp/requirements.lock
+          integrations/instagram-mcp/.venv/bin/python -m pip install --no-deps -e integrations/instagram-mcp
+      - name: Verify Russian tools and publishing confirmation
+        run: |
+          integrations/instagram-mcp/.venv/bin/python -m pytest -q integrations/instagram-mcp/tests
+          python3 integrations/instagram-mcp/run.py --check
