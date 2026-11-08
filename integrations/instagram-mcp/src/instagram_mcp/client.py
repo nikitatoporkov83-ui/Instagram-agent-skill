@@ -131,7 +131,7 @@ class _BaseGraphClient:
 
 
 class InstagramClient(_BaseGraphClient):
-    """Wrapper around graph.instagram.com (Instagram Login API, IGAA tokens).
+    """Own-account API for Instagram Login and explicitly configured Unified Login.
 
     Used for: own-account read/publish/comments/insights/DMs.
     Does NOT support: business_discovery, hashtag search - those require the
@@ -144,6 +144,14 @@ class InstagramClient(_BaseGraphClient):
 
     def _url(self, path: str) -> str:
         path = path.lstrip("/")
+        if self.config.login_mode == 'unified':
+            # /me on Facebook Graph identifies the system user, not necessarily
+            # the intended Instagram account. Always address the selected IG ID.
+            if path.startswith(('access_token','refresh_access_token','oauth/')):
+                raise InstagramAPIError('Для Unified Login используйте управление маркером в Meta; обновление токена Instagram Login здесь неприменимо.',status_code=400)
+            if path == 'me' or path.startswith('me/'):
+                path = str(self.config.instagram_user_id)+path[2:]
+            return f'{self.base_url}/{path}'
         # OAuth endpoints sit outside the versioned namespace
         if path.startswith(("access_token", "refresh_access_token", "oauth/")):
             return f"https://graph.instagram.com/{path}"

@@ -152,7 +152,7 @@ def test_output_sanitizes_nested_tokens_and_pagination():
 async def test_provider_error_never_echoes_token(studio_env):
     respx.get(IG+'/me').mock(return_value=httpx.Response(400,json={'error':{'code':190,'message':'secret IGTOK'}}))
     result = await call('validate_access_token')
-    assert 'истёк' in result['message'] and 'IGTOK' not in json.dumps(result)
+    assert 'отклонила' in result['message'] and 'IGTOK' not in json.dumps(result)
 
 
 @respx.mock

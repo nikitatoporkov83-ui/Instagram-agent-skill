@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -23,6 +24,8 @@ class Config:
     fb_access_token: str | None
     fb_ig_user_id: str | None
     fb_base_url: str
+    login_mode: str = 'instagram'
+    instagram_user_id: str | None = None
 
     @classmethod
     def from_env(cls) -> Config:
@@ -47,16 +50,27 @@ class Config:
         )
         fb_token = (os.getenv("INSTAGRAM_FB_ACCESS_TOKEN") or "").strip() or None
         fb_ig_user_id = (os.getenv("INSTAGRAM_FB_IG_USER_ID") or "").strip() or None
+        # Do not infer token families from protected credential placeholders.
+        # The login flow explicitly selects the authorized API destination.
+        login_mode = os.getenv('INSTAGRAM_LOGIN_MODE','instagram').strip().lower()
+        if login_mode not in ('instagram','unified'):
+            raise RuntimeError('Неподдерживаемый INSTAGRAM_LOGIN_MODE. Допустимы instagram и unified.')
+        instagram_user_id = (os.getenv('INSTAGRAM_IG_USER_ID') or '').strip() or None
+        if login_mode == 'unified' and not re.fullmatch(r'\d{3,64}',instagram_user_id or ''):
+            raise RuntimeError('Укажите числовой INSTAGRAM_IG_USER_ID для Unified Login. Это ID аккаунта Instagram из панели Meta.')
+        host = 'graph.facebook.com' if login_mode == 'unified' else 'graph.instagram.com'
         return cls(
             access_token=token,
             app_id=(os.getenv("INSTAGRAM_APP_ID") or None),
             app_secret=(os.getenv("INSTAGRAM_APP_SECRET") or None),
             api_version=version,
-            base_url=f"https://graph.instagram.com/{version}",
+            base_url=f"https://{host}/{version}",
             data_dir=data_dir,
             fb_access_token=fb_token,
             fb_ig_user_id=fb_ig_user_id,
             fb_base_url=f"https://graph.facebook.com/{version}",
+            login_mode=login_mode,
+            instagram_user_id=instagram_user_id,
         )
 
     @property

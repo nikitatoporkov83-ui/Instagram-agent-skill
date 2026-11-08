@@ -95,9 +95,15 @@ for module in (auth,media,publish,comments,insights,discovery,hashtags,messaging
 
 @mcp.tool(description='Проверить наличие настроек помощника, не выполняя вход и не раскрывая токен.')
 async def connection_status() -> dict[str,Any]:
+    mode = os.getenv('INSTAGRAM_LOGIN_MODE','instagram').strip().lower()
+    unified = mode == 'unified'
     return {'ok':True,'language':'ru','token_configured':bool(os.getenv('INSTAGRAM_ACCESS_TOKEN')),
+            'login_mode':mode if mode in ('instagram','unified') else 'invalid',
+            'api_host':'graph.facebook.com' if unified else 'graph.instagram.com',
+            'instagram_account_id_configured':bool(os.getenv('INSTAGRAM_IG_USER_ID')),
             'message':'Наличие токена не подтверждает подключение. Выполните validate_access_token.',
-            'scopes':['instagram_business_basic','instagram_business_content_publish','instagram_business_manage_comments']}
+            'scopes':['instagram_basic','instagram_content_publish','instagram_manage_comments'] if unified
+                     else ['instagram_business_basic','instagram_business_content_publish','instagram_business_manage_comments']}
 
 
 @mcp.tool(description='Выполнить подготовленное действие только после явного согласия владельца с аккаунтом, материалом и точным текстом. Код действует 10 минут; повтор не создаёт дубль.')

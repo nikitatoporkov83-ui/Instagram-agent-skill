@@ -3,6 +3,6 @@
 [mcp_servers.instagram_studio_ru]
 command = "python3"
 args = ["/workspace/Instagram-agent-skill/integrations/instagram-mcp/run.py"]
-env_vars = ["INSTAGRAM_ACCESS_TOKEN", "APIFY_API_TOKEN", "INSTAGRAM_API_VERSION", "INSTAGRAM_MCP_ENABLE_MESSAGES", "INSTAGRAM_FB_ACCESS_TOKEN", "INSTAGRAM_FB_IG_USER_ID", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY", "http_proxy", "https_proxy", "all_proxy", "no_proxy", "SSL_CERT_FILE", "SSL_CERT_DIR", "REQUESTS_CA_BUNDLE", "CURL_CA_BUNDLE"]
+env_vars = ["INSTAGRAM_ACCESS_TOKEN", "APIFY_API_TOKEN", "INSTAGRAM_API_VERSION", "INSTAGRAM_LOGIN_MODE", "INSTAGRAM_IG_USER_ID", "INSTAGRAM_MCP_ENABLE_MESSAGES", "INSTAGRAM_FB_ACCESS_TOKEN", "INSTAGRAM_FB_IG_USER_ID", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY", "http_proxy", "https_proxy", "all_proxy", "no_proxy", "SSL_CERT_FILE", "SSL_CERT_DIR", "REQUESTS_CA_BUNDLE", "CURL_CA_BUNDLE"]
 startup_timeout_sec = 30
 tool_timeout_sec = 180

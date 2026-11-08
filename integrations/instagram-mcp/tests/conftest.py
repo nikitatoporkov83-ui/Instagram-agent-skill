@@ -4,6 +4,12 @@ from __future__ import annotations
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def isolate_login_mode(monkeypatch):
+    monkeypatch.delenv('INSTAGRAM_LOGIN_MODE',raising=False)
+    monkeypatch.delenv('INSTAGRAM_IG_USER_ID',raising=False)
+
+
 @pytest.fixture
 def env(monkeypatch, tmp_path):
     """Hermetic env: no real .env, fresh server-global clients, test tokens."""

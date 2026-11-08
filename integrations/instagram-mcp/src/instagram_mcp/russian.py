@@ -95,7 +95,7 @@ def result_ru(value: dict[str, Any]) -> dict[str, Any]:
     if value.get('ok') is False or value.get('error'):
         error = value.get('error') if isinstance(value.get('error'),dict) else {}
         code = error.get('code')
-        message = ('Доступ Instagram истёк. Выполните официальный вход заново.' if code == 190
+        message = ('Meta отклонила маркер доступа. Проверьте его актуальность и соответствие режиму Instagram Login или Unified Login.' if code == 190
                    else 'Meta не разрешила операцию. Проверьте права приложения и аккаунта.' if code in (10,200)
                    else 'Достигнут лимит запросов Meta. Повторите проверку позже.' if code in (4,17,32,613) or error.get('status_code') == 429
                    else 'Операция Instagram не выполнена. Проверьте подключение, разрешения и параметры.')
@@ -103,6 +103,10 @@ def result_ru(value: dict[str, Any]) -> dict[str, Any]:
             message = 'Для этого инструмента нужен отдельный доступ Facebook Graph API. Основные публикации и комментарии работают через Instagram Login.'
         if error.get('type') == 'RuntimeError' and 'Не настроен INSTAGRAM_ACCESS_TOKEN' in error.get('message',''):
             message = 'Подключение не настроено. Добавьте INSTAGRAM_ACCESS_TOKEN в защищённые настройки среды.'
+        if error.get('type') == 'RuntimeError' and 'INSTAGRAM_IG_USER_ID' in error.get('message',''):
+            message = 'Для Unified Login укажите числовой INSTAGRAM_IG_USER_ID — ID аккаунта Instagram из панели Meta.'
+        if error.get('type') == 'RuntimeError' and 'INSTAGRAM_LOGIN_MODE' in error.get('message',''):
+            message = 'Выберите INSTAGRAM_LOGIN_MODE: instagram для Instagram Login или unified для Unified Login.'
         return {'ok':False,'message':message,'error':{'code':code,'status_code':error.get('status_code')}}
     result = {**clean(value),'message':'Готово. Данные получены из Instagram.'}
     if 'note' in result:

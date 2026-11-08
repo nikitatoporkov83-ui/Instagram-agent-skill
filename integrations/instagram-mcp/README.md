@@ -43,17 +43,38 @@ integrations/instagram-mcp/.venv/bin/python -m pytest -q integrations/instagram-
 
 ## Официальный доступ
 
-Для прямого MCP нужен `INSTAGRAM_ACCESS_TOKEN` с разрешениями
-`instagram_business_basic`, `instagram_business_content_publish`,
-`instagram_business_manage_comments`. Получите токен через собственное приложение
-Meta с Instagram Login для профессионального аккаунта. Сохраните его только
-в защищённых настройках среды с назначением `graph.instagram.com`.
+Для прямого MCP нужен `INSTAGRAM_ACCESS_TOKEN`. Получите его через собственное
+приложение Meta для профессионального аккаунта. Выберите режим, соответствующий
+реальному разделу панели Meta:
+
+| Настройка | Instagram Login | Unified Login |
+| --- | --- | --- |
+| `INSTAGRAM_LOGIN_MODE` | `instagram` (по умолчанию) | `unified` |
+| Хост API и разрешённое назначение секрета | `graph.instagram.com` | `graph.facebook.com` |
+| `INSTAGRAM_IG_USER_ID` | Необязательно | Числовой ID Instagram-аккаунта из панели Meta |
+| Права для публикаций и комментариев | `instagram_business_basic`, `instagram_business_content_publish`, `instagram_business_manage_comments` | `instagram_basic`, `instagram_content_publish`, `instagram_manage_comments` |
+
+В Unified Login все собственные публикации адресуются явно выбранному Instagram
+ID. Использовать Facebook `/me` для определения целевого Instagram нельзя.
+MCP не определяет тип входа по содержимому секретной переменной и не пересылает
+токен на другой хост после ошибки. Режим и назначения секрета задаются владельцем.
+Если вы используете оба режима, разрешите секрету оба указанных хоста.
+
+Документация Meta: [сравнение трёх способов подключения](https://developers.facebook.com/documentation/instagram-platform/overview),
+[Unified Login](https://developers.facebook.com/documentation/instagram-platform/instagram-api-with-unified-login).
+
+Сохраните значение токена только в защищённых настройках среды.
 Логин и пароль Instagram модулю не нужны. `INSTAGRAM_APP_SECRET` не заменяет
 токен доступа. Прямой MCP не требует размещения Cloudflare Worker.
 
 `validate_access_token` проверяет настоящий профиль. До успешной проверки
 не считайте аккаунт подключённым. Не передавайте токены в чат, Git или .env.
 В русской оболочке инструменты, возвращающие или записывающие токен, не доступны.
+
+Ошибка `190` означает отказ в авторизации; сама по себе она не доказывает
+истечение токена или ошибку копирования. Например, токен Unified Login и запрос
+в API Instagram Login — несовместимое сочетание. Успешный вход подтверждается
+реальным ответом `validate_access_token`, а не префиксом токена или тестами.
 
 Для отправки через сайт дополнительно нужен настроенный API студии и официальный
 вход владельца в веб-интерфейсе. См. корневой `INSTAGRAM_SETUP_RU.md`.
